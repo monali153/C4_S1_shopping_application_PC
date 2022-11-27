@@ -1,0 +1,63 @@
+version: '3.9'
+services:
+  user-product-service:
+    image: user_product_image
+    container_name: user-product-service
+    build: UserProductService/
+    restart: always
+    network_mode: custom-network
+    ports:
+      - 64100:64100
+    depends_on:
+      - mongoService
+      - eureka-service
+      - apigateway
+
+  mongoService:
+    image: mongo
+    container_name: mongoService
+    ports:
+      - 27017:27017
+    network_mode: custom-network
+
+  authentication-service:
+    image: authentication_image
+    container_name: authentication-service
+    build: UserAuth/
+    restart: always
+    network_mode: custom-network
+    ports:
+      - 8082:8082
+    depends_on:
+      - mysqlService
+      - eureka-service
+      - apigateway
+
+  mysqlService:
+    image: mysql:latest
+    container_name: mysqlService
+    network_mode: custom-network
+    ports:
+      - 3306:3306
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USERNAME: root
+      MYSQL_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+
+  apigateway:
+    container_name: apigateway
+    build:  ApiGateway
+    network_mode: custom-network
+    ports:
+      - 9000:9000
+    depends_on:
+      - eureka-service
+
+  eureka-service:
+    container_name: eureka-service
+    build:  EurekaDemo/
+    network_mode: custom-network
+    ports:
+      - 8761:8761
